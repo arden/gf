@@ -208,6 +208,20 @@ func (r *Request) GetSessionId() string {
 	id := r.Cookie.GetSessionId()
 	if id == "" {
 		id = r.Header.Get(r.Server.GetSessionIdName())
+		if id == "" {
+			authHeader := r.Header.Get("Authorization")
+			if authHeader != "" {
+				parts := strings.SplitN(authHeader, " ", 2)
+				if len(parts) == 2 && parts[0] == "Bearer" {
+					id = parts[1]
+				} else {
+					id = authHeader
+				}
+			}
+			if id == "" {
+				id = r.GetString(r.Server.GetSessionIdName())
+			}
+		}
 	}
 	return id
 }
